@@ -30,36 +30,32 @@ bool pred_test(const list<Predicate*>& predicates, struct dirent* entry){
 }
 
 void _traverse(const string& dir, const list<Predicate*>& predicates, int depth, int min_depth, int max_depth){
+    // we verified dir is directory and has been checked
+
     //printf("travesing dir: \"%s\"\n", dir.c_str());
     if(depth > max_depth)
         return;
 
     DIR* dp;
     struct dirent* entry;
-    struct stat statbuf;
 
-    if((dp = opendir(dir.c_str())) == NULL){
+    if(!(dp = opendir(dir.c_str()))){
         fprintf(stderr, "Error: cannot open directory %s\n", dir.c_str());
         return;
     }
 
-    chdir(dir.c_str());
     while((entry = readdir(dp)) != NULL){
         if(strcmp(".", entry->d_name) == 0 || strcmp("..", entry->d_name) == 0) continue;
-
         //printf("checking dir.c_str(): \"%s\" entry->d_name: \"%s\" \n", dir.c_str(), entry->d_name);
         if(depth >= min_depth && pred_test(predicates, entry))
             printf("%s/%s\n", dir.c_str(), entry->d_name);
 
-        lstat(entry->d_name, &statbuf);
-
-        if(S_ISDIR(statbuf.st_mode)){
+        if(entry->d_type == DT_DIR){
             string new_dir = dir + "/" + string(entry->d_name);
             _traverse(new_dir, predicates, depth+1, min_depth, max_depth);
         }
     }
 
-    chdir("..");
     closedir(dp);
 }
 
@@ -160,7 +156,7 @@ int main(int argc, const char *argv[]){
     parse_args(i, predicates, min_depth, max_depth, argc, argv);
 
     for(list<string>::iterator dir_it = dir_list.begin(); dir_it != dir_list.end(); ++dir_it)
-        traverse(*dir_it, predicates, min_depth, max_depth);
+        _traverse(*dir_it, predicates, 0, min_depth, max_depth);
 
     return 0;
 }
