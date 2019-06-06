@@ -22,7 +22,7 @@
 #include <limits.h>
 #include <time.h>
 
-void error_exit(int exit_code, const char* msg){
+static void error_exit(int exit_code, const char* msg){
     fprintf(stderr, "error: %s", msg? msg : "unknown error, exit");
     fputc('n', stderr);
     exit(exit_code);
