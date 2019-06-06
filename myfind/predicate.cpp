@@ -11,7 +11,7 @@ NamePredicate::NamePredicate(const std::string& arg){
     _name = arg;
 }
 
-bool NamePredicate::operator()(struct dirent* entry){
+bool NamePredicate::run(struct dirent* entry){
     return strcmp(entry->d_name, _name.c_str()) == 0;
 }
 
@@ -28,6 +28,6 @@ TypePredicate::TypePredicate(const std::string& arg){
     }
 }
 
-bool TypePredicate::operator()(struct dirent* entry){
+bool TypePredicate::run(struct dirent* entry){
     return entry->d_type == _type;
 }

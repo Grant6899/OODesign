@@ -13,6 +13,8 @@
 
 using namespace std;
 
+string USAGE = "this is the usage";
+
 void print_dir_list(list<string>& dirlist){
     for(list<string>::iterator it = dirlist.begin(); it != dirlist.end(); ++it)
         cout << *it << " ";
@@ -20,6 +22,10 @@ void print_dir_list(list<string>& dirlist){
 }
 
 bool pred_test(const list<Predicate*>& predicates, struct dirent* entry){
+    
+    for(list<Predicate*>::const_iterator it = predicates.begin(); it != predicates.end(); ++it)
+        if(!(*it)->run(entry)) return false;
+
     return true;
 }
 
@@ -108,9 +114,38 @@ void traverse(const string& dir, const list<Predicate*>& predicates, int min_dep
     delete [] dircp2;
 }
 
+void parse_args(int& i, list<Predicate*>& predicates, int& min_depth, int& max_depth, int argc, const char *argv[]){
+    
+    unordered_map<string, PredicateFactory*> factories;
+
+    factories["-name"] = new NamePredicateFactory();
+    factories["-type"] = new TypePredicateFactory();
+
+    while(i < argc){
+        if('-' != argv[i][0])
+            error_exit(1, USAGE.c_str());
+        
+        string pred_name = argv[i++];
+        
+        if(pred_name != "-mindepth" && pred_name != "-maxdepth"){
+            string arg = argv[i++];
+            predicates.push_back(factories[pred_name]->createPredicate(arg));
+        }
+        else{
+            int depth_val = stoi(string(argv[i++]));
+            if(pred_name == "-mindepth") min_depth = depth_val;
+            else max_depth = depth_val;
+        }
+    }
+
+    // clean memory
+    for(unordered_map<string, PredicateFactory*>::iterator it = factories.begin(); it != factories.end(); ++it)
+        delete(it->second);
+}
+
 int main(int argc, const char *argv[]){
     
-    /*list<string> dir_list;
+    list<string> dir_list;
 
     int i = 1;
     while(i < argc && argv[i][0] != '-')
@@ -121,25 +156,11 @@ int main(int argc, const char *argv[]){
     list<Predicate*> predicates;
     
     int min_depth = -1, max_depth = INT_MAX; 
-
     
-
-    // initialize factories
-    //unordered_map<string, PredicateFactory*> PredicateTable;
-    //PredicateTable["name"] = new NamePredicateFactory();
-    //PredicateTable["type"] = new TypePredicateFactory();
-
+    parse_args(i, predicates, min_depth, max_depth, argc, argv);
 
     for(list<string>::iterator dir_it = dir_list.begin(); dir_it != dir_list.end(); ++dir_it)
         traverse(*dir_it, predicates, min_depth, max_depth);
 
-    // clean memory
-    //for(unordered_map<string, PredicateFactory*>::iterator it = PredicateTable.begin(); it != PredicateTable.end(); ++it)
-    //    delete(it->second);
-*/
-
-    NamePredicateFactory namefactory;
-    Predicate* pPredicate1 = namefactory.createPredicate("xx");
-    delete pPredicate1;
     return 0;
 }

@@ -11,7 +11,7 @@
 
 class Predicate{
 public:
-    virtual bool operator()(struct dirent* entry) = 0;
+    virtual bool run(struct dirent* entry) = 0;
     virtual ~Predicate(){}
 };
 
@@ -19,14 +19,14 @@ class NamePredicate : public Predicate{
 	std::string _name;
 public:
 	NamePredicate(const std::string& arg);
-	bool operator()(struct dirent* entry);
+	bool run(struct dirent* entry);
 };
 
 class TypePredicate : public Predicate{
 	unsigned long _type;
 public:
 	TypePredicate(const std::string& arg);
-	bool operator()(struct dirent* entry);
+	bool run(struct dirent* entry);
 };
 
 #endif
