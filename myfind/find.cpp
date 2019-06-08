@@ -30,8 +30,6 @@ bool pred_test(const list<Predicate*>& predicates, struct dirent* entry){
 }
 
 void _traverse(const string& dir, const list<Predicate*>& predicates, int depth, int min_depth, int max_depth){
-    // we verified dir is directory and has been checked
-
     //printf("travesing dir: \"%s\"\n", dir.c_str());
     if(depth > max_depth)
         return;
@@ -119,12 +117,18 @@ void parse_args(int& i, list<Predicate*>& predicates, int& min_depth, int& max_d
 
     while(i < argc){
         if('-' != argv[i][0])
-            error_exit(1, USAGE.c_str());
+            error_exit(1, USAGE);
         
         string pred_name = argv[i++];
         
         if(pred_name != "-mindepth" && pred_name != "-maxdepth"){
+
+            if(i >= argc)
+                error_exit(1, "please input argument for " + pred_name);
+
             string arg = argv[i++];
+            if(factories.find(pred_name) == factories.end())
+                error_exit(1, "myfind doesn't support " + pred_name);
             predicates.push_back(factories[pred_name]->createPredicate(arg));
         }
         else{
@@ -156,7 +160,7 @@ int main(int argc, const char *argv[]){
     parse_args(i, predicates, min_depth, max_depth, argc, argv);
 
     for(list<string>::iterator dir_it = dir_list.begin(); dir_it != dir_list.end(); ++dir_it)
-        _traverse(*dir_it, predicates, 0, min_depth, max_depth);
+        traverse(*dir_it, predicates, min_depth, max_depth);
 
     return 0;
 }

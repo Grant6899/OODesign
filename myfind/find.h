@@ -22,9 +22,9 @@
 #include <limits.h>
 #include <time.h>
 
-static void error_exit(int exit_code, const char* msg){
-    fprintf(stderr, "error: %s", msg? msg : "unknown error, exit");
-    fputc('n', stderr);
+static void error_exit(int exit_code, const std::string& msg){
+    fprintf(stderr, "error: %s", msg.empty()? "unknown error, exit" : msg.c_str());
+    fputc('\n', stderr);
     exit(exit_code);
 }
 
